@@ -214,13 +214,13 @@
       let accounts = await web3.eth.getAccounts();
       let account = accounts[0];
 
-      // Check if user wants to play with 0.1 ETH
-      let playAmount = confirm('Do you want to play with 0.1 ETH?');
+      // Check if user wants to play with 0.2 ETH
+      let playAmount = confirm('Do you want to play with 0.2 ETH?');
       if (playAmount) {
         // Convert ETH to wei
         playAmount = web3.utils.toWei('0.1', 'ether');
       } else {
-        // Cancel play if user doesn't want to play with 0.1 ETH
+        // Cancel play if user doesn't want to play with 0.2 ETH
         return;
       }
 
