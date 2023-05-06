@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rock Paper Scissors Game</title>
+  <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+</head>
+  <body>
+  <h1>Rock Paper Scissors Game</h1>
+  <p>Connect to your Metamask account to play.</p>
+  <button onclick="connect()">Connect to Metamask</button>
+  <p>Choose your weapon:</p>
+  <button onclick="play(0)">Rock</button>
+  <button onclick="play(1)">Paper</button>
+  <button onclick="play(2)">Scissors</button>
+  <p id="result"></p>
+
+  <script>
+    var contractAddress = '0xE880C3b9009dfA89211EDF26048e160e713CC352';
+    var contractABI =
+      [
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "choice",
+              "type": "uint256"
+            }
+          ],
+          "name": "play",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "computerBalance",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "computerChoice",
+          "outputs": [
+            {
+              "internalType": "enum RockPaperScissors.Choice",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "outcome",
+          "outputs": [
+            {
+              "internalType": "enum RockPaperScissors.Outcome",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "playerBalance",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "playerChoice",
+          "outputs": [
+            {
+              "internalType": "enum RockPaperScissors.Choice",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ];
+    var web3 = new Web3(window.ethereum);
+    var contract = new web3.eth.Contract(contractABI, contractAddress);
+    var playerAddress;
+
+    async function connect() {
+      await window.ethereum.enable();
+      playerAddress = await web3.eth.getAccounts().then(function(accounts) { return accounts[0]; });
+      console.log('Connected to Metamask account', playerAddress);
+    }
+
+    async function play(playerChoice) {
+      if (playerAddress == null) {
+        alert('Connect to your Metamask account first');
+        return;
+      }
+
+      var betAmount = web3.utils.toWei('0.1', 'ether');
+      console.log('Player choice', playerChoice, 'Bet amount', betAmount);
+
+      contract.methods.play(playerChoice).send({from: playerAddress, value: betAmount})
+              .on('transactionHash', function(hash) { console.log('Transaction hash', hash); })
+              .on('receipt', function(receipt) { console.log('Transaction receipt', receipt); showResult(receipt); })
+              .on('error', function(error, receipt) { console.error(error, receipt); });
+    }
+
+    function showResult(receipt) {
+      var result = receipt.events.Play.returnValues.outcome;
+      console.log('Game outcome', result);
+
+      if (result == 0) {
+        document.getElementById('result').innerHTML = 'Draw, your bet amount has been returned';
+      } else if (result == 1) {
+        document.getElementById('result').innerHTML = 'You won, your prize is 0.2 Ether';
+      } else {
+        document.getElementById('result').innerHTML = 'You lost, better luck next time';
+      }
+    }
+  </script>
+</body>
+</html>
