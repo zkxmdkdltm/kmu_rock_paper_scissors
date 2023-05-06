@@ -2,138 +2,247 @@
 <html>
 <head>
   <title>Rock Paper Scissors Game</title>
-  <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
 </head>
-  <body>
-  <h1>Rock Paper Scissors Game</h1>
-  <p>Connect to your Metamask account to play.</p>
-  <button onclick="connect()">Connect to Metamask</button>
-  <p>Choose your weapon:</p>
-  <button onclick="play(0)">Rock</button>
-  <button onclick="play(1)">Paper</button>
-  <button onclick="play(2)">Scissors</button>
-  <p id="result"></p>
+<body>
+<h1>Rock Paper Scissors Game</h1>
+<p>Connect your Metamask account to play:</p>
+<button onclick="connect()">Connect to Metamask</button>
+<hr>
+<p>Select your move:</p>
+<button onclick="play(1)">Rock</button>
+<button onclick="play(2)">Paper</button>
+<button onclick="play(3)">Scissors</button>
+<hr>
+<p id="result"></p>
 
-  <script>
-    var contractAddress = '0xE880C3b9009dfA89211EDF26048e160e713CC352';
-    var contractABI =
-      [
+<script>
+  // Instantiate web3 object
+  let web3 = new Web3(window.ethereum);
+
+  // Contract address and abi
+  const contractAddress = '0xAfCEca2E566c32d783D3EdbF8Df4903A5A6D25B8';
+  const contractAbi = [
+    {
+      "inputs": [
         {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "choice",
-              "type": "uint256"
-            }
-          ],
-          "name": "play",
-          "outputs": [],
-          "stateMutability": "payable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "computerBalance",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "computerChoice",
-          "outputs": [
-            {
-              "internalType": "enum RockPaperScissors.Choice",
-              "name": "",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "outcome",
-          "outputs": [
-            {
-              "internalType": "enum RockPaperScissors.Outcome",
-              "name": "",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "playerBalance",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "playerChoice",
-          "outputs": [
-            {
-              "internalType": "enum RockPaperScissors.Choice",
-              "name": "",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
+          "internalType": "bytes32",
+          "name": "gameId",
+          "type": "bytes32"
         }
-      ];
-    var web3 = new Web3(window.ethereum);
-    var contract = new web3.eth.Contract(contractABI, contractAddress);
-    var playerAddress;
-
-    async function connect() {
-      await window.ethereum.enable();
-      playerAddress = await web3.eth.getAccounts().then(function(accounts) { return accounts[0]; });
-      console.log('Connected to Metamask account', playerAddress);
+      ],
+      "name": "createGame",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "gameId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "GameCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "gameId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "playerMove",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "contractMove",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "win",
+          "type": "bool"
+        }
+      ],
+      "name": "GamePlayed",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "gameId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
+          "name": "playerMove",
+          "type": "uint8"
+        }
+      ],
+      "name": "play",
+      "outputs": [
+        {
+          "internalType": "int8",
+          "name": "",
+          "type": "int8"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "games",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "internalType": "enum RockPaperScissors.Move",
+          "name": "playerMove",
+          "type": "uint8"
+        },
+        {
+          "internalType": "enum RockPaperScissors.Move",
+          "name": "contractMove",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "played",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
+  ];
 
-    async function play(playerChoice) {
-      if (playerAddress == null) {
-        alert('Connect to your Metamask account first');
+  // Instantiate contract object
+  let contract = new web3.eth.Contract(contractAbi, contractAddress);
+
+  // Connect to Metamask
+  async function connect() {
+    try {
+      // Request account access if needed
+      await window.ethereum.enable();
+
+      // Get selected account
+      let accounts = await web3.eth.getAccounts();
+      let account = accounts[0];
+      alert("Connected to account: " + account );
+      console.log('Connected to account:', account);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Play the game
+  async function play(playerMove) {
+    try {
+      // Get selected account
+      let accounts = await web3.eth.getAccounts();
+      let account = accounts[0];
+
+      // Check if user wants to play with 0.1 ETH
+      let playAmount = confirm('Do you want to play with 0.1 ETH?');
+      if (playAmount) {
+        // Convert ETH to wei
+        playAmount = web3.utils.toWei('0.1', 'ether');
+      } else {
+        // Cancel play if user doesn't want to play with 0.1 ETH
         return;
       }
 
-      var betAmount = web3.utils.toWei('0.1', 'ether');
-      console.log('Player choice', playerChoice, 'Bet amount', betAmount);
+      // Create game
+      let gameId = web3.utils.sha3('' + Date.now());
+      await contract.methods.createGame(gameId).send({from: account, value: playAmount});
 
-      contract.methods.play(playerChoice).send({from: playerAddress, value: betAmount})
-              .on('transactionHash', function(hash) { console.log('Transaction hash', hash); })
-              .on('receipt', function(receipt) { console.log('Transaction receipt', receipt); showResult(receipt); })
-              .on('error', function(error, receipt) { console.error(error, receipt); });
-    }
+      // Play game
+      let result = await contract.methods.play(gameId, playerMove).send({from: account, value: playAmount});
 
-    function showResult(receipt) {
-      var result = receipt.events.Play.returnValues.outcome;
-      console.log('Game outcome', result);
-
-      if (result == 0) {
-        document.getElementById('result').innerHTML = 'Draw, your bet amount has been returned';
-      } else if (result == 1) {
-        document.getElementById('result').innerHTML = 'You won, your prize is 0.2 Ether';
+      // Display result
+      let win = result.events.GamePlayed.returnValues.win;
+      if (win) {
+        document.getElementById('result').textContent = 'You win!';
       } else {
-        document.getElementById('result').innerHTML = 'You lost, better luck next time';
+        document.getElementById('result').textContent = 'You lose!';
+        console.log(result)
       }
+    } catch (error) {
+      console.error(error);
     }
-  </script>
+  }
+</script>
 </body>
 </html>
