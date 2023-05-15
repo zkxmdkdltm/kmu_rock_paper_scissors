@@ -7,6 +7,7 @@
 </head>
 <body>
 <h1>Rock Paper Scissors Game</h1>
+<a href="https://youtu.be/eF8uCgNKQm4">Explanation Link</a>
 <p>Connect your Metamask account to play:</p>
 <button onclick="connect()">Connect to Metamask</button>
 <hr>
@@ -233,8 +234,10 @@
 
       // Display result
       let win = result.events.GamePlayed.returnValues.win;
-      if (win) {
+      if (win==1) {
         document.getElementById('result').textContent = 'You win!';
+      } else if(win==0){
+        document.getElementById('result').textContent = 'You draw!';
       } else {
         document.getElementById('result').textContent = 'You lose!';
         console.log(result)
